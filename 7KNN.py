@@ -1,58 +1,37 @@
-import pandas as pd
 import numpy as np
+from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
-from sklearn.datasets import load_iris
+from collections import Counter
 
-iris= load_iris()
-X = iris.data
-y = iris.target
+# Load Iris dataset
+iris = load_iris()
+X, y = iris.data, iris.target
+names = iris.target_names
 
+# Split data (25% for testing)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)
 
-def euclidean_distance(point1, point2):
-    return np.sqrt(np.sum((point1 - point2) ** 2))
+def euclidean_distance(a, b):
+    return np.sqrt(np.sum((a - b) ** 2))
 
-def knn_predict(train_data, train_labels, test_point, k=3):
-    distances = []
+def knn_predict(X_train, y_train, x, k=3):
+    dists = [euclidean_distance(x, xi) for xi in X_train]
+    k_idx = np.argsort(dists)[:k]
+    return Counter(y_train[k_idx]).most_common(1)[0][0]
 
-    for i in range(len(train_data)):
-        distance = euclidean_distance(test_point, train_data[i])
-        distances.append((distance, train_labels[i]))
+# Evaluate on test set
+y_pred = np.array([knn_predict(X_train, y_train, x, k=3) for x in X_test])
+acc = accuracy_score(y_test, y_pred)
+print("Accuracy:", acc)
 
-    sorted_distances = sorted(distances, key=lambda x: x[0])
-    k_nearest_neighbors = sorted_distances[:k]
+# User input for a new prediction
+sl = float(input("Enter sepal length: "))
+sw = float(input("Enter sepal width: "))
+pl = float(input("Enter petal length: "))
+pw = float(input("Enter petal width: "))
+user_sample = np.array([sl, sw, pl, pw])
+pred = knn_predict(X_train, y_train, user_sample, k=3)
 
-    class_counts = {}
-    for neighbor in k_nearest_neighbors:
-        label = neighbor[1]
-        class_counts[label] = class_counts.get(label, 0) + 1
-    predicted_class = max(class_counts, key=class_counts.get)
-    return predicted_class
-
-
-pred = [knn_predict(X_train, y_train, X_test[i], k=3) for i in range(len(X_test))]
-accuracy = accuracy_score(y_test, pred)
-print("Accuracy:", accuracy)
-
-
-sepal_length = float(input("Enter sepal length: "))
-sepal_width = float(input("Enter sepal width: "))
-petal_length = float(input("Enter petal length: "))
-petal_width = float(input("Enter petal width: "))
-
-user_data_np = np.array([sepal_length, sepal_width, petal_length, petal_width])
-
-# Reshape the array to have a single row
-user_data_np = user_data_np.reshape(1, -1) # reshape to (1, 4) for single sample
-
-prediction = knn_predict(X_train, y_train, user_data_np[0], k=3)
-
-# Map prediction to Iris species
-iris_species = {
-    0: "Setosa",
-    1: "Versicolor",
-    2: "Virginica"
-}
-
-predicted_species = iris_species.get(prediction, "Unknown")
+species = {0: "Setosa", 1: "Versicolor", 2: "Virginica"}
+print("Predicted species:", species.get(pred, "Unknown"))
