@@ -1,50 +1,32 @@
-import numpy as np
-
 def hill_climbing(func, start, step_size=0.01, max_iterations=1000):
-    current_position = start
-    current_value = func(current_position)
+    current = start
+    current_val = func(current)
     
-    for i in range(max_iterations):
-        next_position_positive = current_position + step_size
-        next_value_positive = func(next_position_positive)
+    for _ in range(max_iterations):
+        pos = current + step_size
+        neg = current - step_size
+        pos_val = func(pos)
+        neg_val = func(neg)
         
-        next_position_negative = current_position - step_size
-        next_value_negative = func(next_position_negative)
-        
-        if next_value_positive > current_value and next_value_positive >= next_value_negative:
-            current_position = next_position_positive
-            current_value = next_value_positive
-        elif next_value_negative > current_value and next_value_negative > next_value_positive:
-            current_position = next_position_negative
-            current_value = next_value_negative
+        # Move in the direction that increases the value the most.
+        if pos_val > current_val and pos_val >= neg_val:
+            current, current_val = pos, pos_val
+        elif neg_val > current_val and neg_val > pos_val:
+            current, current_val = neg, neg_val
         else:
-            break
+            break  # No improvement found.
     
-    return current_position, current_value
+    return current, current_val
 
-# Get the function from the user
-while True:
-    func_str = input("\nEnter a function of x: ")
-    try:
-        # Test the function with a dummy value
-        x = 0
-        eval(func_str)
-        break
-    except Exception as e:
-        print(f"Invalid function. Please try again. Error: {e}")
-
-# Convert the string into a function
-func = lambda x: eval(func_str)
-
-# Get the starting point from the user
-while True:
-    start_str = input("\nEnter the starting value to begin the search: ")
-    try:
-        start = float(start_str)
-        break
-    except ValueError:
-        print("Invalid input. Please enter a number.")
-
-maxima, max_value = hill_climbing(func, start)
-print(f"The maxima is at x = {maxima}")
-print(f"The maximum value obtained is {max_value}")
+if __name__ == '__main__':
+    # Get the function as a string from the user.
+    func_str = input("Enter a function of x (e.g., '-(x-3)**2 + 10'): ")
+    # Convert the string to a function using eval (note: eval can be dangerous in real applications).
+    f = lambda x: eval(func_str)
+    
+    # Get the starting value.
+    start = float(input("Enter the starting value: "))
+    
+    maximum, max_value = hill_climbing(f, start)
+    print(f"The maximum is at x = {maximum}")
+    print(f"The maximum value is {max_value}")
