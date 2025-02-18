@@ -6,12 +6,11 @@ from sklearn.datasets import load_iris
 iris = load_iris()
 X = iris.data  # Features (sepal length, sepal width, petal length, petal width)
 
-def kmeans(X, k):
-    centroids = X[np.random.choice(X.shape[0], k, replace=False)]
+def kmeans(X, k, iterations=100):
+    centroids = X[np.random.choice(len(X), k, replace=False)]  # Random initial centroids
 
-    for _ in range(100):
-        distances = np.linalg.norm(X[:, None] - centroids, axis=2)
-        labels = np.argmin(distances, axis=1)
+    for _ in range(iterations):
+        labels = np.argmin([np.linalg.norm(X - c, axis=1) for c in centroids], axis=0)
         centroids = np.array([X[labels == i].mean(axis=0) for i in range(k)])
 
     return centroids, labels
