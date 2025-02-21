@@ -1,0 +1,35 @@
+import numpy as np
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.naive_bayes import GaussianNB
+
+# Load iris dataset
+iris = load_iris()
+X, y = iris.data, iris.target
+names = iris.target_names
+
+# Split data into training and test sets (70% train, 30% test)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=1)
+
+# Create the Gaussian Naive Bayes classifier and train it
+gnb = GaussianNB()
+gnb.fit(X_train, y_train)
+
+# Predict on the test set and evaluate accuracy
+y_pred = gnb.predict(X_test)
+print("Accuracy: %.4f" % accuracy_score(y_test, y_pred))
+print("Predictions:", names[y_pred])
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred, target_names=names))
+
+# Take user input for a new sample and predict its class
+sl = float(input("Enter sepal length: "))
+sw = float(input("Enter sepal width: "))
+pl = float(input("Enter petal length: "))
+pw = float(input("Enter petal width: "))
+user_sample = np.array([sl, sw, pl, pw]).reshape(1, -1)
+pred = gnb.predict(user_sample)[0]
+print("Predicted Iris Species:", names[pred])
